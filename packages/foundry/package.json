@@ -1,0 +1,24 @@
+{
+  "name": "foundry",
+  "version": "1.0.0",
+  "description": "**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@layerzerolabs/lz-evm-messagelib-v2": "^2.3.29",
+    "@layerzerolabs/lz-evm-oapp-v2": "^2.3.29",
+    "@layerzerolabs/lz-evm-protocol-v2": "^2.3.29",
+    "@layerzerolabs/lz-evm-v1-0.7": "^2.3.29",
+    "@layerzerolabs/test-devtools-evm-foundry": "^0.2.7",
+    "@openzeppelin/contracts": "^5.0.2",
+    "solidity-bytes-utils": "^0.8.2"
+  }
+}
