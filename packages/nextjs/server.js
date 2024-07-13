@@ -10,8 +10,6 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-let playersCount = 0;
-
 app.prepare().then(() => {
     const server = createServer(async (req, res) => {
         try {
@@ -25,19 +23,70 @@ app.prepare().then(() => {
     });
 
     const io = socketIo(server);
+    let currentRoomNumber = 1;
+    const rooms = {};
+    const playerAccounts = {}; // Map to store player account addresses
 
     io.on('connection', (socket) => {
-        playersCount++;
         console.log('A user connected:', socket.id);
-        io.emit('players', playersCount); // Broadcast the number of players
 
-        socket.on('disconnect', () => {
-            playersCount--;
-            console.log('User disconnected:', socket.id);
-            io.emit('players', playersCount); // Broadcast the number of players
+        // Find a room with less than 2 players or create a new room
+        let roomId;
+        for (const id of Object.keys(rooms)) {
+            if (rooms[id].size < 2) {
+                roomId = id;
+                break;
+            }
+        }
+        if (!roomId) {
+            roomId = `room-${currentRoomNumber}`;
+            rooms[roomId] = new Set();
+            currentRoomNumber++;
+        }
+
+        // Join the room
+        socket.join(roomId);
+        rooms[roomId].add(socket.id);
+        console.log(`User ${socket.id} joined room ${roomId}`);
+        io.to(roomId).emit('players', rooms[roomId].size);
+
+        // Store player account address
+        socket.on('registerAccount', (account) => {
+            playerAccounts[socket.id] = account;
+            console.log(`User ${socket.id} registered account ${account}`);
         });
 
-        // Handle other socket events here
+        socket.on('disconnect', () => {
+            console.log('User disconnected:', socket.id);
+            rooms[roomId].delete(socket.id);
+            delete playerAccounts[socket.id];
+            if (rooms[roomId].size === 0) {
+                delete rooms[roomId];
+            } else {
+                io.to(roomId).emit('players', rooms[roomId].size);
+            }
+        });
+
+        if (rooms[roomId].size === 2) {
+            console.log(`Starting game in room ${roomId}`);
+            io.to(roomId).emit('startGame');
+        }
+
+        socket.on('updateBird', (bird) => {
+            socket.to(roomId).emit('updateBird', bird);
+        });
+
+        socket.on('playerLost', () => {
+            if (rooms[roomId].size === 2) {
+                // Find the other player
+                rooms[roomId].forEach((clientId) => {
+                    if (clientId !== socket.id) {
+                        io.to(clientId).emit('gameResult', { result: 'win', opponent: playerAccounts[socket.id] });
+                    }
+                });
+                socket.emit('gameResult', { result: 'lose', opponent: playerAccounts[Array.from(rooms[roomId]).find(id => id !== socket.id)] });
+            }
+        });
     });
 
     server.listen(port, (err) => {
