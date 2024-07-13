@@ -6,6 +6,7 @@ import {Script} from "forge-std/Script.sol";
 import {Flappy} from "../src/Flappy.sol"; // Adjust the path as needed
 import {HelperConfig} from "./HelperConfig.s.sol";
 import {console2} from "forge-std/console2.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 //forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir
 //to actually deploy: forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir --broadcast
@@ -30,6 +31,7 @@ contract DeployCrossChain is Script {
         arbitrumId = vm.createSelectFork(arbitrumSepoliaForkUrl);
         vm.startBroadcast(prKey);
         arbitrumSepoliaContract = new Flappy(endpoint, deployer);
+        arbitrumSepoliaContract.addToken(IERC20(vm.envAddress("LINK_ARB")));
 
         vm.stopBroadcast();
         console2.log("Contract deployed on arbitrumSepolia at:", address(arbitrumSepoliaContract));
@@ -39,6 +41,7 @@ contract DeployCrossChain is Script {
         baseId = vm.createSelectFork(baseSepoliaForkUrl);
         vm.startBroadcast(prKey);
         baseSepoliaContract = new Flappy(baseEndpoint, deployer);
+        baseSepoliaContract.addToken(IERC20(vm.envAddress("LINK_BASE")));
 
         //setting peers on both chains
         baseSepoliaContract.setPeer(arbitrumEid, bytes32(uint256(uint160(address(arbitrumSepoliaContract)))));

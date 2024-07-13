@@ -33,6 +33,5 @@ print-heading:
 	printf "                       %s\n" "$$heading"; \
 	printf "//////////////////////////////////////////////////////////////*/\n"
 
-# Contract deployed on arbitrumSepolia at: 0xbB07FA2CbD53277B5e85C62619038D5E2352933f
-#   Contract deployed on baseSepolia at: 0xEe1Af345C5272E3f194881aBEB60FCf0f6e29592
+deploy-floppy:;	forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir
 
