@@ -56,7 +56,7 @@ contract Flappy is OApp {
                              EVENTS   
     //////////////////////////////////////////////////////////////*/
     event Deposited(address indexed player, uint256 indexed amount);
-    event GameEnded(address indexed winner, address indexed looser, uint256 indexed amount);
+    event GameEnded(address indexed winner, address indexed looser, uint256 indexed amount, uint256 points);
     event WinClaimed(address indexed winner, uint256 indexed amount);
     event TokenSet();
 
@@ -116,7 +116,7 @@ contract Flappy is OApp {
 
         receipt = _lzSend(eid, _payload, _options, MessagingFee(msg.value, 0), payable(msg.sender));
 
-        emit GameEnded(msg.sender, looser, amount);
+        emit GameEnded(msg.sender, looser, amount, points);
     }
 
     /**
