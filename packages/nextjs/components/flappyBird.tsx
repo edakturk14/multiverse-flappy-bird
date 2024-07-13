@@ -48,7 +48,7 @@ function startGameLogic(
       height: birdHeight,
     };
 
-    const otherBird = { x: birdX, y: birdY, width: birdWidth, height: birdHeight };
+    const otherBird = { x: birdX, y: birdY - 50, width: birdWidth, height: birdHeight }; // Adjusted Y position for other bird
 
     // pipes
     let pipeArray: any[] = [];
@@ -69,7 +69,7 @@ function startGameLogic(
     // physics
     const velocityX = -2; // pipes moving left speed
     let velocityY = 0; // bird jump speed
-    const gravity = 0.2;
+    const gravity = 0.1; //TO_DO adjust to make it harder
 
     const update = () => {
       if (gameOverRef.current) {
@@ -91,6 +91,12 @@ function startGameLogic(
 
       context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
       context.drawImage(birdImg, otherBird.x, otherBird.y, otherBird.width, otherBird.height);
+
+      // Draw labels
+      context.fillStyle = "black";
+      context.font = "20px Arial";
+      context.fillText("Player 1", bird.x + bird.width / 2 - 20, bird.y - 10);
+      context.fillText("Player 2", otherBird.x + otherBird.width / 2 - 20, otherBird.y - 10);
 
       for (let i = 0; i < pipeArray.length; i++) {
         const pipe = pipeArray[i];

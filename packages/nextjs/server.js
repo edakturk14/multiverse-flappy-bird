@@ -69,7 +69,16 @@ app.prepare().then(() => {
 
         if (rooms[roomId].size === 2) {
             console.log(`Starting game in room ${roomId}`);
-            io.to(roomId).emit('startGame');
+            let countdownValue = 3;
+            io.to(roomId).emit('countdown', countdownValue);
+            const countdownInterval = setInterval(() => {
+                countdownValue--;
+                io.to(roomId).emit('countdown', countdownValue);
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval);
+                    io.to(roomId).emit('startGame');
+                }
+            }, 1000);
         }
 
         socket.on('updateBird', (bird) => {
