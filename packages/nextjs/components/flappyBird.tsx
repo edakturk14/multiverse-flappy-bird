@@ -76,8 +76,12 @@ function startGameLogic(
         context.clearRect(0, 0, canvas.width, canvas.height);
         return;
       }
-
       context.clearRect(0, 0, canvas.width, canvas.height);
+
+
+      context.fillStyle = "#87CEEB"; // Sky blue background
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
 
       velocityY += gravity;
       bird.y = Math.max(bird.y + velocityY, 0); // apply gravity to current bird.y, limit the bird.y to top of the canvas

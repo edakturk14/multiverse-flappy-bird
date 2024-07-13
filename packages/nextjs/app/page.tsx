@@ -112,7 +112,7 @@ export default function Home() {
           </button>
         </div>
       )}
-      <canvas ref={canvasRef} id="board" className="w-full h-full" />
+      <canvas ref={canvasRef} id="board" className="w-full h-full fixed top-0 left-0" />
     </div>
   );
 }
