@@ -5,7 +5,7 @@ let socket: Socket<DefaultEventsMap, DefaultEventsMap> | null = null;
 
 export const getSocket = (): Socket<DefaultEventsMap, DefaultEventsMap> => {
   if (!socket) {
-    socket = io(); // Automatically connects to the same server that serves the page
+    socket = io('https://multichain-websocket-server-7f6d426823b2.herokuapp.com/'); // Update with your Heroku WebSocket server URL
   }
   return socket;
 };
