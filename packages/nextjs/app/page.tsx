@@ -1,71 +1,77 @@
 "use client";
 
-import Link from "next/link";
-import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { useEffect, useRef, useState } from "react";
+import { getSocket } from "~~/api/socket";
+// Update with the correct path to your socket.ts file
+import { startGame as startGameLogic } from "~~/components/flappyBird";
 
-const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+export default function Home() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [players, setPlayers] = useState(0);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gameOverRef = useRef(gameOver);
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on("connect", () => {
+      console.log("Connected to server");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from server");
+    });
+
+    socket.on("players", (count: number) => {
+      setPlayers(count);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("players");
+    };
+  }, []);
+
+  useEffect(() => {
+    gameOverRef.current = gameOver;
+  }, [gameOver]);
+
+  const startGame = () => {
+    startGameLogic(canvasRef, setGameStarted, setGameOver, gameOverRef);
+  };
+
+  const restartGame = () => {
+    setGameStarted(false);
+    setGameOver(false);
+  };
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen relative">
+      <div className="absolute top-0 left-0 m-4 flex items-center">
+        <div className={`w-6 h-6 rounded-full ${players > 1 ? "bg-green-500" : "bg-red-500"}`}></div>
+        <p className="ml-2">
+          {players} {players === 1 ? "player" : "players"} online
+        </p>
       </div>
-    </>
+      {!gameStarted && !gameOver && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <button onClick={startGame} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
+            Start Game
+          </button>
+        </div>
+      )}
+      {gameOver && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70">
+          <span className="text-white text-6xl font-bold mb-8">GAME OVER</span>
+          <button onClick={restartGame} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
+            Home
+          </button>
+        </div>
+      )}
+      <canvas ref={canvasRef} id="board" />
+    </div>
   );
-};
-
-export default Home;
+}
