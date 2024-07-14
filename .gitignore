@@ -21,3 +21,8 @@ node_modules
 
 # cli
 dist
+packages/foundry/.env
+packages/foundry/notes.txt
+packages/foundry/broadcast/*
+packages/foundry/cache/*
+packages/foundry/out/*
