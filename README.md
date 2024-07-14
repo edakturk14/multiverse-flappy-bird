@@ -1,4 +1,19 @@
-Compete: The game continues until one player loses. The winner takes all the funds.
+# Multiverse Flappy Bird
+
+Welcome to Flappy Bird Multiplayer! This game was built for the ETHGlobal Brussels Hackathon. The game is cross-chain fallpy bird, allowing players to use various chains like Base, Optimism, and Arbitrum. Players pay an entry fee to start the game, and the winner takes all the funds, thanks to LayerZero's cross-chain communication.
+
+## Features
+- Multiplayer Gameplay: Two players can compete against each other in real-time
+- Cross-Chain Compatibility: Choose your preferred chain (Base, Optimism, Arbitrum, etc.) to play.
+Entry Fee and Prize: Players pay an entry fee, and the winner takes all the funds.
+- Real-Time Leaderboard: See the chains where players and playing the most and the best players.
+
+## How to Play 
+1. Connect Your Wallet: Use MetaMask or another Web3 wallet to connect to the game.
+2. Select Chain and Pay Entry Fee: Choose your preferred chain and pay the entry fee.
+3. Wait for Opponent: Wait for another player to join.
+4. Game Starts: Once both players are ready, the game will start with a countdown.
+5. Compete: The game continues until one player loses. The winner takes all the funds.
 
 ## Tech Stack
 - Server: The server handles the game logic and manages the rooms for the players. It ensures that the game starts simultaneously for both players and handles the distribution of funds to the winner.
