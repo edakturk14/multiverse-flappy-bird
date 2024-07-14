@@ -20,22 +20,27 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameOverRef = useRef(gameOver);
 
-  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
+  const { writeContractAsync } = useScaffoldWriteContract("YourContract");
 
   const handlePayment = async () => {
     console.log("Making deposit...");
+
+    /*
     try {
-      const txResponse = await writeYourContractAsync({
+      const txResponse = await writeContractAsync({
         functionName: "deposit",
         args: [], // No arguments are needed for the deposit function
-        value: parseEther("2"), // This sends 2 ETH with the transaction
+        value: parseEther("0.02"), // This sends 2 ETH with the transaction
+      }, {
+        onBlockConfirmation: (txnReceipt) => {
+          console.log("📦 Transaction confirmed, blockHash:", txnReceipt.blockHash);
+          setPaid(true);
+        }
       });
-      console.log("Deposit successful", txResponse);
-      console.log("Transaction details:", txResponse);
-      setPaid(true);
     } catch (e) {
       console.error("Error making deposit:", e);
-    }
+    }*/
+    setPaid(true);
   };
 
   useEffect(() => {
@@ -99,7 +104,7 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center h-screen w-screen overflow-hidden relative">
       {!gameStarted && !paid && (
         <button className="btn btn-primary" style={{ zIndex: 1000 }} onClick={() => handlePayment()}>
-          Pay 2 USDC to play the game
+          Pay 0.02 ETH to play the game
         </button>
       )}
       {paid && (
