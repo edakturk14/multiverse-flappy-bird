@@ -1,4 +1,36 @@
-# Multiverse Flappy Bird
+Compete: The game continues until one player loses. The winner takes all the funds.
+
+## Tech Stack
+- Server: The server handles the game logic and manages the rooms for the players. It ensures that the game starts simultaneously for both players and handles the distribution of funds to the winner.
+- Client: The client is a Next.js application that interacts with the server and handles the game UI. It uses Scaffold-ETH for Ethereum interactions and Tailwind CSS for styling.
+- Smart Contracts: The smart contracts handle the entry fee and prize distribution. They are deployed on multiple chains to allow cross-chain compatibility.
+
+## Quickstart
+
+To get started with Scaffold-ETH 2, follow the steps below:
+
+1. Install dependencies if it was skipped in CLI:
+
+cd my-dapp-example
+yarn install
+
+
+2. Run a local network in the first terminal:
+
+yarn chain
+
+
+3. On a second terminal, deploy the test contract:
+
+yarn deploy
+
+
+4. On a third terminal, start your NextJS app:
+
+yarn start
+
+
+Visit your app on: http://localhost:3000
 
 ## Feedback For LayerZero
 ```
