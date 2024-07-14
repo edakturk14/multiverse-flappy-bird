@@ -1,4 +1,5 @@
 # Multiverse Flappy Bird
+![Flappy Bird Cover](./flappy-bird-cover.jpg)
 
 ## Index
 - [Features](#features)
