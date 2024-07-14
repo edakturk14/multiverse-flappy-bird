@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { getSocket, startGame } from "../components/flappyBird";
 import { Address } from "~~/components/scaffold-eth";
-import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { flappyAbi, erc20Abi } from "~~/contracts/abi";
+import { useAccount } from "wagmi";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { parseEther } from "viem";
 
 export default function Home() {
   const { address } = useAccount();
@@ -20,26 +18,8 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameOverRef = useRef(gameOver);
 
-  const { writeContractAsync } = useScaffoldWriteContract("YourContract");
-
   const handlePayment = async () => {
     console.log("Making deposit...");
-
-    /*
-    try {
-      const txResponse = await writeContractAsync({
-        functionName: "deposit",
-        args: [], // No arguments are needed for the deposit function
-        value: parseEther("0.02"), // This sends 2 ETH with the transaction
-      }, {
-        onBlockConfirmation: (txnReceipt) => {
-          console.log("📦 Transaction confirmed, blockHash:", txnReceipt.blockHash);
-          setPaid(true);
-        }
-      });
-    } catch (e) {
-      console.error("Error making deposit:", e);
-    }*/
     setPaid(true);
   };
 
