@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { getSocket, startGame } from "../components/flappyBird";
 import { Address } from "~~/components/scaffold-eth";
 import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { flappyAbi } from "~~/contracts/abi";
-import { erc20Abi } from "~~/contracts/abi";
+import { flappyAbi, erc20Abi } from "~~/contracts/abi";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { parseEther } from "viem";
 
 export default function Home() {
   const { address } = useAccount();
@@ -15,71 +16,72 @@ export default function Home() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameResult, setGameResult] = useState<string | null>(null);
   const [opponent, setOpponent] = useState<string | null>(null);
-  const [depositOrApprove, setDepositOrApprove] = useState<"approve" | "deposit">("approve");
+  const [paid, setPaid] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameOverRef = useRef(gameOver);
-  const { writeContract, error, context, data: hash, status, isPending } = useWriteContract()
 
-  const chainId = useChainId()
-  const arbSepoliaContract = "0xB1C533983f2a39694E7F7fF8BD3161866BDca1D8"
-  const baseSepoliaContract = "0x3c652E75FCEb8165228D4A3984BCF17E53805BD3"
-  const arbSepoliaErc20 = "0xb1d4538b4571d411f07960ef2838ce337fe1e80e"
-  const baseSepoliaErc20 = "0xE4aB69C077896252FAFBD49EFD26B5D171A32410"
+  const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("YourContract");
 
-  const { data: allowance } = useReadContract({
-    abi: erc20Abi,
-    address: chainId == 421614 ? arbSepoliaErc20 : baseSepoliaErc20,
-    functionName: "allowance",
-    args: [
-      address,
-      chainId == 421614 ? arbSepoliaContract : baseSepoliaContract,
-    ]
-  })
+  const handlePayment = async () => {
+    console.log("Making deposit...");
+    try {
+      const txResponse = await writeYourContractAsync({
+        functionName: "deposit",
+        args: [], // No arguments are needed for the deposit function
+        value: parseEther("2"), // This sends 2 ETH with the transaction
+      });
+      console.log("Deposit successful", txResponse);
+      console.log("Transaction details:", txResponse);
+      setPaid(true);
+    } catch (e) {
+      console.error("Error making deposit:", e);
+    }
+  };
 
   useEffect(() => {
-    const socket = getSocket();
+    if (paid && address) {
+      const socket = getSocket();
 
-    socket.on('connect', () => {
-      console.log('Connected to server');
-      if (address) {
+      socket.on('connect', () => {
+        console.log('Connected to server');
         socket.emit('registerAccount', address);
-      }
-    });
+      });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
 
-    socket.on('players', (count: number) => {
-      setPlayers(count);
-    });
+      socket.on('players', (count: number) => {
+        setPlayers(count);
+      });
 
-    socket.on('countdown', (count: number) => {
-      setCountdown(count);
-      if (count <= 0) {
-        setCountdown(null);
-        setGameStarted(true);
-        setGameOver(false);
-        startGame(canvasRef, setGameStarted, setGameOver, gameOverRef);
-      }
-    });
+      socket.on('countdown', (count: number) => {
+        setCountdown(count);
+        if (count <= 0) {
+          setCountdown(null);
+          setGameStarted(true);
+          setGameOver(false);
+          startGame(canvasRef, setGameStarted, setGameOver, gameOverRef);
+        }
+      });
 
-    socket.on('gameResult', ({ result, opponent }) => {
-      setGameOver(true);
-      setGameResult(result);
-      setOpponent(opponent);
-    });
+      socket.on('gameResult', ({ result, opponent }) => {
+        setGameOver(true);
+        setGameResult(result);
+        setOpponent(opponent);
+      });
 
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('players');
-      socket.off('countdown');
-      socket.off('startGame');
-      socket.off('gameResult');
-    };
-  }, [address]);
-
+      return () => {
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('players');
+        socket.off('countdown');
+        socket.off('startGame');
+        socket.off('gameResult');
+        socket.close();  // Ensure the socket is closed on cleanup
+      };
+    }
+  }, [paid, address]);  // Dependency on 'paid' to initialize the socket after payment
 
   useEffect(() => {
     gameOverRef.current = gameOver;
@@ -90,41 +92,17 @@ export default function Home() {
     setGameOver(false);
     setGameResult(null);
     setOpponent(null);
+    setPaid(false);  // Reset payment on game restart
   };
-
-  useEffect(() => {
-    if (allowance as number > 0) {
-      setDepositOrApprove("deposit")
-    } else {
-      setDepositOrApprove("approve")
-    }
-  }, [allowance])
-
-  const handleDeposit = () => {
-    writeContract({
-      abi: flappyAbi,
-      address: chainId == 421614 ? arbSepoliaContract : baseSepoliaContract,
-      functionName: "deposit",
-      args: [ //IERC20 _token, uint256 _amount
-        1e18
-      ]
-    })
-  }
-
-  const handleApprove = () => {
-    writeContract({
-      abi: erc20Abi,
-      address: chainId == 421614 ? arbSepoliaErc20 : baseSepoliaErc20,
-      functionName: "deposit",
-      args: [ //IERC20 _token, uint256 _amount
-        1e18
-      ]
-    })
-  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen w-screen overflow-hidden relative">
-      {!gameStarted && (
+      {!gameStarted && !paid && (
+        <button className="btn btn-primary" style={{ zIndex: 1000 }} onClick={() => handlePayment()}>
+          Pay 2 USDC to play the game
+        </button>
+      )}
+      {paid && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="absolute top-0 left-0 m-4 flex items-center">
             <div className={`w-6 h-6 rounded-full ${players > 1 ? "bg-green-500" : "bg-red-500"}`}></div>
@@ -159,19 +137,9 @@ export default function Home() {
           <button onClick={restartGame} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
             Home
           </button>
-          {/* {
-            depositOrApprove == "deposit" ?
-              < button onClick={() => handleDeposit()} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
-                Deposit
-              </button> :
-              < button onClick={() => handleApprove()} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
-                Approve
-              </button>
-          } */}
         </div>
-      )
-      }
+      )}
       <canvas ref={canvasRef} id="board" className="w-full h-full fixed top-0 left-0" />
-    </div >
+    </div>
   );
 }
