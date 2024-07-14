@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSocket, startGame } from "../components/flappyBird";
-import { useAccount } from "wagmi";
 import { Address } from "~~/components/scaffold-eth";
+import { useAccount, useChainId, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { flappyAbi } from "~~/contracts/abi";
+import { erc20Abi } from "~~/contracts/abi";
 
 export default function Home() {
   const { address } = useAccount();
@@ -13,9 +15,26 @@ export default function Home() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameResult, setGameResult] = useState<string | null>(null);
   const [opponent, setOpponent] = useState<string | null>(null);
-
+  const [depositOrApprove, setDepositOrApprove] = useState<"approve" | "deposit">("approve");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameOverRef = useRef(gameOver);
+  const { writeContract, error, context, data: hash, status, isPending } = useWriteContract()
+
+  const chainId = useChainId()
+  const arbSepoliaContract = "0xB1C533983f2a39694E7F7fF8BD3161866BDca1D8"
+  const baseSepoliaContract = "0x3c652E75FCEb8165228D4A3984BCF17E53805BD3"
+  const arbSepoliaErc20 = "0xb1d4538b4571d411f07960ef2838ce337fe1e80e"
+  const baseSepoliaErc20 = "0xE4aB69C077896252FAFBD49EFD26B5D171A32410"
+
+  const { data: allowance } = useReadContract({
+    abi: erc20Abi,
+    address: chainId == 421614 ? arbSepoliaErc20 : baseSepoliaErc20,
+    functionName: "allowance",
+    args: [
+      address,
+      chainId == 421614 ? arbSepoliaContract : baseSepoliaContract,
+    ]
+  })
 
   useEffect(() => {
     const socket = getSocket();
@@ -73,6 +92,36 @@ export default function Home() {
     setOpponent(null);
   };
 
+  useEffect(() => {
+    if (allowance as number > 0) {
+      setDepositOrApprove("deposit")
+    } else {
+      setDepositOrApprove("approve")
+    }
+  }, [allowance])
+
+  const handleDeposit = () => {
+    writeContract({
+      abi: flappyAbi,
+      address: chainId == 421614 ? arbSepoliaContract : baseSepoliaContract,
+      functionName: "deposit",
+      args: [ //IERC20 _token, uint256 _amount
+        1e18
+      ]
+    })
+  }
+
+  const handleApprove = () => {
+    writeContract({
+      abi: erc20Abi,
+      address: chainId == 421614 ? arbSepoliaErc20 : baseSepoliaErc20,
+      functionName: "deposit",
+      args: [ //IERC20 _token, uint256 _amount
+        1e18
+      ]
+    })
+  }
+
   return (
     <div className="flex flex-col items-center justify-center h-screen w-screen overflow-hidden relative">
       {!gameStarted && (
@@ -110,9 +159,19 @@ export default function Home() {
           <button onClick={restartGame} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
             Home
           </button>
+          {/* {
+            depositOrApprove == "deposit" ?
+              < button onClick={() => handleDeposit()} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
+                Deposit
+              </button> :
+              < button onClick={() => handleApprove()} className="bg-white text-blue-500 font-bold py-2 px-4 rounded mt-4 text-xl">
+                Approve
+              </button>
+          } */}
         </div>
-      )}
+      )
+      }
       <canvas ref={canvasRef} id="board" className="w-full h-full fixed top-0 left-0" />
-    </div>
+    </div >
   );
 }
