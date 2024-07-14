@@ -1,5 +1,12 @@
 # Multiverse Flappy Bird
 
+## Index
+- [Features](#features)
+- [How to Play](#how-to-play)
+- [Tech Stack](#tech-stack)
+- [Quickstart](#quickstart)
+- [Feedback For LayerZero](#feedback-for-layerzero)
+
 Welcome to Flappy Bird Multiplayer! This game was built for the ETHGlobal Brussels Hackathon. The game is cross-chain fallpy bird, allowing players to use various chains like Base, Optimism, and Arbitrum. Players pay an entry fee to start the game, and the winner takes all the funds, thanks to LayerZero's cross-chain communication.
 
 ## Features
