@@ -1,0 +1,34 @@
+[profile.default]
+src = 'src'
+test = 'test'
+script = 'script'
+out = 'out'
+libs = ['lib','node_modules']
+auto_detect_remappings = true # recursive auto-detection of remappings
+
+remappings = [
+        "@layerzerolabs/=node_modules/@layerzerolabs/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "ds-test/=node_modules/ds-test/src/",
+        "forge-std/=lib/forge-std/src/",
+        "solidity-bytes-utils/=node_modules/solidity-bytes-utils/"
+    ]
+cache = true
+cache_path = 'cache'
+broadcast = 'broadcast'
+
+deployer = "0x1C9E05B29134233e19fbd0FE27400F5FFFc3737e"
+private_key = "${PRIVATE_KEY}"  
+
+[networks]
+arbitrumSepolia = { chain_id = 1234 } 
+baseSepolia = { chain_id = 5678 }     
+
+[rpc_endpoints]
+arbitrumSepolia = "${ARBITRUM_SEPOLIA_RPC_URL}"
+baseSepolia = "${BASE_SEPOLIA_RPC_URL}"
+
+     # Replace with your actual private key
+
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
