@@ -10,7 +10,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 //forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir
 //to actually deploy: forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir --broadcast
+
 contract DeployCrossChain is Script {
+    address public LINK_ARB = 0xb1D4538B4571d411F07960EF2838Ce337FE1E80E;
+    address public LINK_BASE = 0xE4aB69C077896252FAFBD49EFD26B5D171A32410;
+
     function run()
         external
         returns (
@@ -31,7 +35,7 @@ contract DeployCrossChain is Script {
         arbitrumId = vm.createSelectFork(arbitrumSepoliaForkUrl);
         vm.startBroadcast(prKey);
         arbitrumSepoliaContract = new Flappy(endpoint, deployer);
-        arbitrumSepoliaContract.addToken(IERC20(vm.envAddress("LINK_ARB")));
+        arbitrumSepoliaContract.addToken(IERC20(LINK_ARB));
 
         vm.stopBroadcast();
         console2.log("Contract deployed on arbitrumSepolia at:", address(arbitrumSepoliaContract));
@@ -41,7 +45,7 @@ contract DeployCrossChain is Script {
         baseId = vm.createSelectFork(baseSepoliaForkUrl);
         vm.startBroadcast(prKey);
         baseSepoliaContract = new Flappy(baseEndpoint, deployer);
-        baseSepoliaContract.addToken(IERC20(vm.envAddress("LINK_BASE")));
+        baseSepoliaContract.addToken(IERC20(LINK_BASE));
 
         //setting peers on both chains
         baseSepoliaContract.setPeer(arbitrumEid, bytes32(uint256(uint160(address(arbitrumSepoliaContract)))));

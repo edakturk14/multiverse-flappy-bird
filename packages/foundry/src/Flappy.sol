@@ -41,8 +41,12 @@ contract Flappy is OApp {
     error Flappy__PeerAlreadyExists(bytes32);
     error Flappy__NotEnoughWin();
 
+    /*//////////////////////////////////////////////////////////////
+                       LIBRARIES
+    //////////////////////////////////////////////////////////////*/
     using SafeERC20 for IERC20;
     using SignatureVerifier for bytes32;
+    using OptionsBuilder for bytes;
 
     /*//////////////////////////////////////////////////////////////
                        STATE VARIABLES
@@ -102,7 +106,7 @@ contract Flappy is OApp {
         address looser,
         uint256 points,
         bytes memory proof,
-        bytes memory _options
+        bytes memory /*_options*/
     ) external payable returns (MessagingReceipt memory receipt) {
         bool isProofValid = verifySignature(amount, looser, points, proof);
         if (!isProofValid) {
@@ -111,7 +115,7 @@ contract Flappy is OApp {
         s_pointsByPlayer[msg.sender] += points;
 
         //  send msg crosschain with layer0
-        // bytes memory _options = OptionsBuilder.newOptions();
+        bytes memory _options = OptionsBuilder.newOptions().addExecutorLzReceiveOption(150000, 0); //setting a default value for sending test txs
         bytes memory _payload = abi.encode(msg.sender, amount, points);
 
         receipt = _lzSend(eid, _payload, _options, MessagingFee(msg.value, 0), payable(msg.sender));

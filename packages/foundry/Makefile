@@ -17,7 +17,7 @@ install :; forge install foundry-rs/forge-std --no-commit && forge install openz
 
 build:; forge build
 
-test :; forge test 
+test :; forge test --via-ir
 
 snapshot :; forge snapshot
 
@@ -33,5 +33,9 @@ print-heading:
 	printf "                       %s\n" "$$heading"; \
 	printf "//////////////////////////////////////////////////////////////*/\n"
 
-deploy-floppy:;	forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir
+deploy-floppy:;	forge script script/DeployCrossChain.s.sol:DeployCrossChain -vvvv --via-ir --broadcast
 
+end-game:;	forge script script/SendMessage.s.sol:SendMessage -vvvv --via-ir --broadcast
+
+#   Contract deployed on arbitrumSepolia at: 0xB1C533983f2a39694E7F7fF8BD3161866BDca1D8
+#   Contract deployed on baseSepolia at: 0x3c652E75FCEb8165228D4A3984BCF17E53805BD3
