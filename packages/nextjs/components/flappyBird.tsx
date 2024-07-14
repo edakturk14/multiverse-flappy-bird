@@ -82,16 +82,8 @@ function startGameLogic(
       context.fillStyle = "#87CEEB"; // Sky blue background
       context.fillRect(0, 0, canvas.width, canvas.height);
 
-
       velocityY += gravity;
       bird.y = Math.max(bird.y + velocityY, 0); // apply gravity to current bird.y, limit the bird.y to top of the canvas
-
-      if (bird.y >= canvas.height || bird.y <= 0) {
-        setGameOver(true);
-        gameOverRef.current = true;
-        socket.emit("playerLost");
-        return;
-      }
 
       context.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
       context.drawImage(birdImg, otherBird.x, otherBird.y, otherBird.width, otherBird.height);
@@ -151,7 +143,7 @@ function startGameLogic(
 
     const moveBird = (e: KeyboardEvent) => {
       if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyX") {
-        velocityY = -6;
+        velocityY = -3;
 
         if (gameOverRef.current) {
           bird.y = birdY;
