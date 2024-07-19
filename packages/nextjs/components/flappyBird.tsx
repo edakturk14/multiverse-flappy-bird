@@ -69,7 +69,7 @@ function startGameLogic(
     // physics
     const velocityX = -2; // pipes moving left speed
     let velocityY = 0; // bird jump speed
-    const gravity = 0.1; //TO_DO adjust to make it harder
+    const gravity = 0.3; //TO_DO adjust to make it harder
 
     const update = () => {
       if (gameOverRef.current) {

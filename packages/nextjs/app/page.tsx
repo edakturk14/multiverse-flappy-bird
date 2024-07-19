@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSocket, startGame } from "../components/flappyBird";
-import { useAccount } from "wagmi";
 import { Address } from "~~/components/scaffold-eth";
+import { useAccount } from "wagmi";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 export default function Home() {
   const { address } = useAccount();
@@ -13,54 +14,59 @@ export default function Home() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameResult, setGameResult] = useState<string | null>(null);
   const [opponent, setOpponent] = useState<string | null>(null);
-
+  const [paid, setPaid] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameOverRef = useRef(gameOver);
 
+  const handlePayment = async () => {
+    console.log("Making deposit...");
+    setPaid(true);
+  };
+
   useEffect(() => {
-    const socket = getSocket();
+    if (paid && address) {
+      const socket = getSocket();
 
-    socket.on('connect', () => {
-      console.log('Connected to server');
-      if (address) {
+      socket.on('connect', () => {
+        console.log('Connected to server');
         socket.emit('registerAccount', address);
-      }
-    });
+      });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-    });
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
 
-    socket.on('players', (count: number) => {
-      setPlayers(count);
-    });
+      socket.on('players', (count: number) => {
+        setPlayers(count);
+      });
 
-    socket.on('countdown', (count: number) => {
-      setCountdown(count);
-      if (count <= 0) {
-        setCountdown(null);
-        setGameStarted(true);
-        setGameOver(false);
-        startGame(canvasRef, setGameStarted, setGameOver, gameOverRef);
-      }
-    });
+      socket.on('countdown', (count: number) => {
+        setCountdown(count);
+        if (count <= 0) {
+          setCountdown(null);
+          setGameStarted(true);
+          setGameOver(false);
+          startGame(canvasRef, setGameStarted, setGameOver, gameOverRef);
+        }
+      });
 
-    socket.on('gameResult', ({ result, opponent }) => {
-      setGameOver(true);
-      setGameResult(result);
-      setOpponent(opponent);
-    });
+      socket.on('gameResult', ({ result, opponent }) => {
+        setGameOver(true);
+        setGameResult(result);
+        setOpponent(opponent);
+      });
 
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('players');
-      socket.off('countdown');
-      socket.off('startGame');
-      socket.off('gameResult');
-    };
-  }, [address]);
-
+      return () => {
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('players');
+        socket.off('countdown');
+        socket.off('startGame');
+        socket.off('gameResult');
+        socket.close();  // Ensure the socket is closed on cleanup
+      };
+    }
+  }, [paid, address]);  // Dependency on 'paid' to initialize the socket after payment
 
   useEffect(() => {
     gameOverRef.current = gameOver;
@@ -71,11 +77,17 @@ export default function Home() {
     setGameOver(false);
     setGameResult(null);
     setOpponent(null);
+    setPaid(false);  // Reset payment on game restart
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen w-screen overflow-hidden relative">
-      {!gameStarted && (
+      {!gameStarted && !paid && (
+        <button className="btn btn-primary" style={{ zIndex: 1000 }} onClick={() => handlePayment()}>
+          Pay 0.02 ETH to play the game
+        </button>
+      )}
+      {paid && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="absolute top-0 left-0 m-4 flex items-center">
             <div className={`w-6 h-6 rounded-full ${players > 1 ? "bg-green-500" : "bg-red-500"}`}></div>
